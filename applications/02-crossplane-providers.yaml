@@ -17,7 +17,12 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
     targetRevision: main
-    path: providers
+    path: providers/
+    directory:
+      recurse: true
+    exclude:
+      - '*.yaml'
+
   
   destination:
     server: https://kubernetes.default.svc

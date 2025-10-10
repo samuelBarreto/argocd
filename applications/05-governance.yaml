@@ -17,9 +17,11 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR
     targetRevision: main
-    path: governance
+    path: .
     directory:
       recurse: true
+    exclude:
+      - '*.yaml'
   
   destination:
     server: https://kubernetes.default.svc
