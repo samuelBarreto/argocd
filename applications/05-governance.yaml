@@ -20,8 +20,7 @@ spec:
     path: .
     directory:
       recurse: true
-    exclude:
-      - '*.yaml'
+
   
   destination:
     server: https://kubernetes.default.svc

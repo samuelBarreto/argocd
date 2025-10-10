@@ -20,8 +20,6 @@ spec:
     path: providers/
     directory:
       recurse: true
-    exclude:
-      - '*.yaml'
 
   
   destination:
