@@ -1,0 +1,42 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-core
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: crossplane
+    layer: infrastructure
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+    targetRevision: main
+    path: crossplane-system
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Sync waves para ordem de deployment
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+

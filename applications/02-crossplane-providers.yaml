@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-providers
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: crossplane-providers
+    layer: infrastructure
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Deploy após o core
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+    targetRevision: main
+    path: crossplane-system/providers
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+  
+  # Health check customizado para Providers
+  ignoreDifferences:
+  - group: pkg.crossplane.io
+    kind: Provider
+    jsonPointers:
+    - /status
+

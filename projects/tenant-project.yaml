@@ -1,0 +1,63 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tenant
+  namespace: argocd
+  labels:
+    project: tenant
+    app.kubernetes.io/managed-by: argocd
+spec:
+  description: "Tenant Resources - Application Teams"
+  
+  sourceRepos:
+  - 'https://github.com/your-org/crossplane-platform.git'  # ALTERAR
+  
+  # Tenants só podem deployar em seus namespaces
+  destinations:
+  - namespace: 'dev-*'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'staging-*'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'prod-*'
+    server: 'https://kubernetes.default.svc'
+  
+  # Recursos negados (não podem criar recursos de infraestrutura diretamente)
+  clusterResourceBlacklist:
+  - group: '*'
+    kind: '*'
+  
+  # Recursos permitidos apenas no namespace
+  namespaceResourceWhitelist:
+  - group: 'platform.example.com'
+    kind: 'Database'
+  - group: 'platform.example.com'
+    kind: 'Bucket'
+  - group: 'platform.example.com'
+    kind: 'Network'
+  - group: ''
+    kind: 'ConfigMap'
+  - group: ''
+    kind: 'Secret'
+  - group: 'apps'
+    kind: 'Deployment'
+  
+  orphanedResources:
+    warn: true
+  
+  roles:
+  - name: tenant-admin
+    description: "Admin access to tenant resources"
+    policies:
+    - p, proj:tenant:tenant-admin, applications, *, tenant/*, allow
+    groups:
+    - team-leads
+  
+  - name: tenant-developer
+    description: "Developer access to tenant resources"
+    policies:
+    - p, proj:tenant:tenant-developer, applications, get, tenant/*, allow
+    - p, proj:tenant:tenant-developer, applications, sync, tenant/*, allow
+    groups:
+    - developers
+

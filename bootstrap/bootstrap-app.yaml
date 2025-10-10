@@ -1,0 +1,47 @@
+---
+# Bootstrap Application - App of Apps Pattern
+# Este é o único recurso que precisa ser aplicado manualmente: kubectl apply -f bootstrap-app.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-bootstrap
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: crossplane-bootstrap
+    app.kubernetes.io/managed-by: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR PARA SEU REPOSITÓRIO
+    targetRevision: main
+    path: argocd/applications
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Health checks customizados
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jsonPointers:
+    - /spec/replicas
+

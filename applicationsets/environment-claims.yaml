@@ -1,0 +1,56 @@
+---
+# ApplicationSet para sincronizar Claims por ambiente
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: environment-claims
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: environment-claims
+    layer: applications
+spec:
+  generators:
+  # Generator de lista para cada ambiente
+  - list:
+      elements:
+      - environment: dev
+        syncWave: "10"
+      - environment: hlm
+        syncWave: "11"
+      - environment: prod
+        syncWave: "12"
+  
+  template:
+    metadata:
+      name: 'claims-{{environment}}'
+      labels:
+        environment: '{{environment}}'
+        layer: applications
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{syncWave}}'
+    
+    spec:
+      project: tenant
+      
+      source:
+        repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+        targetRevision: main
+        path: 'environments/{{environment}}/claims'
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{environment}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+

@@ -1,0 +1,57 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  labels:
+    project: platform
+    app.kubernetes.io/managed-by: argocd
+spec:
+  description: "Platform Engineering - Crossplane Infrastructure"
+  
+  # Repositories permitidos
+  sourceRepos:
+  - 'https://github.com/your-org/crossplane-platform.git'  # ALTERAR
+  - 'https://charts.crossplane.io/stable'
+  
+  # Destinos permitidos (clusters e namespaces)
+  destinations:
+  - namespace: 'crossplane-system'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'argocd'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'gatekeeper-system'
+    server: 'https://kubernetes.default.svc'
+  
+  # Recursos permitidos (Cluster-scoped)
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  
+  # Recursos permitidos (Namespace-scoped)
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  
+  # Orphaned resources (recursos órfãos)
+  orphanedResources:
+    warn: true
+  
+  # Roles para acesso ao projeto
+  roles:
+  - name: platform-admin
+    description: "Full access to platform resources"
+    policies:
+    - p, proj:platform:platform-admin, applications, *, platform/*, allow
+    groups:
+    - platform-team
+  
+  - name: platform-viewer
+    description: "Read-only access to platform resources"
+    policies:
+    - p, proj:platform:platform-viewer, applications, get, platform/*, allow
+    - p, proj:platform:platform-viewer, applications, list, platform/*, allow
+    groups:
+    - developers
+
