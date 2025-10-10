@@ -17,7 +17,7 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/argocd.git  # ALTERAR PARA SEU REPOSITÓRIO
     targetRevision: samuel
-    path: argocd/applications
+    path: applications
   
   destination:
     server: https://kubernetes.default.svc
