@@ -15,7 +15,7 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR PARA SEU REPOSITÓRIO
+    repoURL: https://github.com/samuelBarreto/crossplane-platform.git  # ALTERAR PARA SEU REPOSITÓRIO
     targetRevision: main
     path: argocd/applications
   

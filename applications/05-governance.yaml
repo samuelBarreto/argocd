@@ -15,7 +15,7 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+    repoURL: https://github.com/samuelBarreto/crossplane-platform.git  # ALTERAR
     targetRevision: main
     path: governance
     directory:

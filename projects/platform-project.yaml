@@ -12,7 +12,7 @@ spec:
   
   # Repositories permitidos
   sourceRepos:
-  - 'https://github.com/your-org/crossplane-platform.git'  # ALTERAR
+  - 'https://github.com/samuelBarreto/crossplane-platform.git'  # ALTERAR
   - 'https://charts.crossplane.io/stable'
   
   # Destinos permitidos (clusters e namespaces)
