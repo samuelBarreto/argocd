@@ -13,8 +13,8 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/samuelBarreto/crossplane-platform.git  # ALTERAR
-    targetRevision: samuel
+    repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
+    targetRevision: main
     path: crossplane-system
   
   destination:

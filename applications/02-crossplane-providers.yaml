@@ -16,7 +16,7 @@ spec:
   
   source:
     repoURL: https://github.com/samuelBarreto/crossplane-platform.git  # ALTERAR
-    targetRevision: samuel
+    targetRevision: main
     path: crossplane-system/providers
   
   destination:
