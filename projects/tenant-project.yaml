@@ -11,7 +11,7 @@ spec:
   description: "Tenant Resources - Application Teams"
   
   sourceRepos:
-  - 'https://github.com/samuelBarreto/crossplane-platform.git'  # ALTERAR
+  - 'https://github.com/samuelBarreto/argocd.git'  # ALTERAR
   
   # Tenants só podem deployar em seus namespaces
   destinations:
