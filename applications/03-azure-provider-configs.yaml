@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: crossplane-provider-configs
+  name: crossplane-azure-provider-configs
   namespace: argocd
   labels:
     app.kubernetes.io/name: provider-configs
