@@ -19,6 +19,7 @@ spec:
     repoURL: https://github.com/samuelBarreto/environments.git
     targetRevision: main  # ou HEAD para sempre pegar a branch atual
     path: prod/claims/
+    # Kustomize automaticamente detectado (kustomization.yaml presente)
   
   destination:
     server: https://kubernetes.default.svc
