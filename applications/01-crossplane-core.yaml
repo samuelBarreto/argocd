@@ -13,9 +13,9 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+    repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
     targetRevision: main
-    path: crossplane-system
+    path: install/
   
   destination:
     server: https://kubernetes.default.svc

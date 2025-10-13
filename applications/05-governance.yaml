@@ -15,11 +15,12 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/your-org/crossplane-platform.git  # ALTERAR
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR
     targetRevision: main
-    path: governance
+    path: .
     directory:
       recurse: true
+
   
   destination:
     server: https://kubernetes.default.svc
