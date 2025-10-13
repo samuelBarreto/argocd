@@ -226,3 +226,4 @@ kubectl get resourcequota -A
 
 **Dúvidas?** Veja a documentação completa ou abra uma issue!
 
+

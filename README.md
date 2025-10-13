@@ -76,6 +76,8 @@ kubectl wait --for=condition=Ready pods --all -n argocd --timeout=300s
 # Obter senha inicial
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d && echo
+
+kubectl port-forward -n argocd svc/argocd-server 8080:443
 ```
 
 ### 2️⃣ Aplicar AppProjects (Separação de Permissões)
