@@ -1,0 +1,51 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: environment-dev
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: environment-dev
+    layer: workloads
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"  # Deploy após platform APIs
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/environments.git
+    targetRevision: main  # ou HEAD para sempre pegar a branch atual
+    path: dev/claims/
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  
+  syncPolicy:
+    automated:
+      prune: true       # Remove recursos deletados do Git
+      selfHeal: true    # Corrige drift automaticamente
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true  # Aplica apenas o que mudou
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Ignorar diferenças em status (gerenciado pelo Crossplane)
+  ignoreDifferences:
+  - group: platform.example.com
+    kind: Database
+    jsonPointers:
+    - /status
+  - group: platform.example.com
+    kind: Bucket
+    jsonPointers:
+    - /status
+

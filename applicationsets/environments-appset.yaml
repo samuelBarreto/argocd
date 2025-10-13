@@ -1,0 +1,88 @@
+---
+# ApplicationSet para gerenciar múltiplos ambientes
+# Útil se você quiser usar branches diferentes por ambiente
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: environments
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: environments
+    layer: workloads
+spec:
+  # Estratégia de geração
+  generators:
+  - list:
+      elements:
+      # Ambiente Dev
+      - environment: dev
+        branch: main        # ou 'dev' se quiser branch separada
+        namespace: dev
+        syncWave: "10"
+      
+      # Ambiente Prod
+      - environment: prod
+        branch: main        # ou 'prod' se quiser branch separada  
+        namespace: prod
+        syncWave: "10"
+      
+      # Ambiente HLM (Homologação)
+      - environment: hlm
+        branch: main        # ou 'hlm' se quiser branch separada
+        namespace: hlm
+        syncWave: "10"
+  
+  template:
+    metadata:
+      name: 'environment-{{environment}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: 'environment-{{environment}}'
+        layer: workloads
+        environment: '{{environment}}'
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{syncWave}}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    
+    spec:
+      project: platform
+      
+      source:
+        repoURL: https://github.com/samuelBarreto/environments.git
+        targetRevision: '{{branch}}'  # Branch específica por ambiente
+        path: '{{environment}}/claims/'
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+      
+      # Ignorar status dos recursos Crossplane
+      ignoreDifferences:
+      - group: platform.example.com
+        kind: Database
+        jsonPointers:
+        - /status
+      - group: platform.example.com
+        kind: Bucket
+        jsonPointers:
+        - /status
+      - group: platform.example.com
+        kind: Network
+        jsonPointers:
+        - /status
+

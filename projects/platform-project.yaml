@@ -14,6 +14,9 @@ spec:
   sourceRepos:
   - 'https://github.com/samuelBarreto/argocd.git'  # ALTERAR
   - 'https://github.com/samuelBarreto/governance.git'
+  - 'https://github.com/samuelBarreto/environments.git'
+  - 'https://github.com/samuelBarreto/crossplane-system.git'
+  - 'https://github.com/samuelBarreto/platform-apis.git'
   - 'https://charts.crossplane.io/stable'
   
   # Destinos permitidos (clusters e namespaces)
