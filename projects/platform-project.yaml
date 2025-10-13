@@ -13,6 +13,7 @@ spec:
   # Repositories permitidos
   sourceRepos:
   - 'https://github.com/samuelBarreto/argocd.git'  # ALTERAR
+  - 'https://github.com/samuelBarreto/governance.git'
   - 'https://charts.crossplane.io/stable'
   
   # Destinos permitidos (clusters e namespaces)
@@ -22,6 +23,12 @@ spec:
   - namespace: 'argocd'
     server: 'https://kubernetes.default.svc'
   - namespace: 'gatekeeper-system'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'dev'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'prod'
+    server: 'https://kubernetes.default.svc'
+  - namespace: 'hlm'
     server: 'https://kubernetes.default.svc'
   
   # Recursos permitidos (Cluster-scoped)
