@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-provider-configs
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: provider-configs
+    layer: infrastructure
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # Deploy após providers
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
+    targetRevision: main
+    path: provider-configs/azure
+    directory:
+      recurse: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+  
+  syncPolicy:
+    automated:
+      prune: false  # Não deletar configs automaticamente por segurança
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
