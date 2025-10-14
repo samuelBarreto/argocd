@@ -7,6 +7,8 @@ metadata:
   labels:
     app.kubernetes.io/name: crossplane
     layer: infrastructure
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"  # Primeiro a ser criado
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
@@ -24,19 +26,15 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true
+      selfHeal: false  # Desabilitar auto-sync para controle manual
     syncOptions:
     - CreateNamespace=true
     - ServerSideApply=true
+    - RespectIgnoreDifferences=true
     retry:
       limit: 5
       backoff:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  
-  # Sync waves para ordem de deployment
-  syncPolicy:
-    syncOptions:
-    - CreateNamespace=true
 
