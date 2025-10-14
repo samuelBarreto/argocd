@@ -188,7 +188,7 @@ spec:
 ```yaml
 metadata:
   annotations:
-    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   syncPolicy:
     automated:
@@ -251,7 +251,7 @@ kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller -
 ## 💡 Best Practices:
 
 ### ✅ DO:
-- Use waves espaçadas (0, 1, 2, 10, 11, 12) para facilitar inserir novas apps
+- Use waves espaçadas (0, 1, 2, 4, 5, 6) para facilitar inserir novas apps
 - Desabilite auto-sync para apps críticas
 - Use retry com backoff adequado
 - Agrupe apps relacionadas na mesma wave
@@ -328,7 +328,7 @@ argocd app sync environment-prod --wait
 
 **Use Sync Waves** como já configurado! É o melhor equilíbrio entre automação e controle.
 
-Wave 0 → 1 → 2 → 3 → 4 → 10 → 11 → 12
+Wave 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 Cada wave só inicia **após a anterior terminar**! 🎯
 
