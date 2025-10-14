@@ -9,7 +9,7 @@ metadata:
     layer: workloads
     environment: hlm
   annotations:
-    argocd.argoproj.io/sync-wave: "11"  # Deploy após dev
+    argocd.argoproj.io/sync-wave: "6"  # Deploy após dev
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
