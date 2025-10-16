@@ -1,0 +1,66 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: governance-policies
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: governance-policies
+    layer: security
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Após Gatekeeper
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR para seu repo
+    targetRevision: main
+    path: policies
+    directory:
+      recurse: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gatekeeper-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    - RespectIgnoreDifferences=true
+    - ServerSideApply=true  # Apply no servidor (melhor para CRDs)
+    - SkipDryRunOnMissingResource=true  # Não falhar se CRDs ainda não existirem
+    retry:
+      limit: 20  # Mais tentativas para aguardar ConstraintTemplates serem processados
+      backoff:
+        duration: 45s  # Muito mais tempo entre tentativas
+        factor: 2
+        maxDuration: 20m
+  
+  # Ignorar diferenças em status
+  ignoreDifferences:
+  - group: templates.gatekeeper.sh
+    kind: ConstraintTemplate
+    jsonPointers:
+    - /status
+  - group: constraints.gatekeeper.sh
+    kind: K8sRequiredLabels
+    jsonPointers:
+    - /status
+  - group: constraints.gatekeeper.sh
+    kind: K8sValidCostCenter
+    jsonPointers:
+    - /status
+  - group: constraints.gatekeeper.sh
+    kind: K8sAllowedRegions
+    jsonPointers:
+    - /status
+  - group: constraints.gatekeeper.sh
+    kind: K8sDenyPublicAccess
+    jsonPointers:
+    - /status
+
