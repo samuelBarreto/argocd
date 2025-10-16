@@ -32,12 +32,13 @@ spec:
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true  # Aplica apenas o que mudou
+    - SkipDryRunOnMissingResource=true  # Aguardar XRDs estarem prontos
     retry:
-      limit: 5
+      limit: 10
       backoff:
-        duration: 5s
+        duration: 15s
         factor: 2
-        maxDuration: 3m
+        maxDuration: 10m
   
   # Ignorar diferenças em status (gerenciado pelo Crossplane)
   ignoreDifferences:

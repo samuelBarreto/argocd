@@ -33,12 +33,13 @@ spec:
     - CreateNamespace=true
     - RespectIgnoreDifferences=true
     - ApplyOutOfSyncOnly=true
+    - SkipDryRunOnMissingResource=true  # Não falhar se CRDs ainda não existirem
     retry:
-      limit: 10  # Mais tentativas para aguardar ConstraintTemplates
+      limit: 15  # Mais tentativas para aguardar Gatekeeper
       backoff:
-        duration: 20s  # Mais tempo entre tentativas
+        duration: 30s  # Mais tempo entre tentativas
         factor: 2
-        maxDuration: 10m
+        maxDuration: 15m
   
   # Ignorar diferenças em status
   ignoreDifferences:
