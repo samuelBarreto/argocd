@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: governance-rbac
     layer: security
   annotations:
-    argocd.argoproj.io/sync-wave: "5"  # QUINTO - Por último
+    argocd.argoproj.io/sync-wave: "4"  # QUARTO - Após namespaces
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
