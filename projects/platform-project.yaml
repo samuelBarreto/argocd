@@ -18,6 +18,7 @@ spec:
   - 'https://github.com/samuelBarreto/crossplane-system.git'
   - 'https://github.com/samuelBarreto/platform-apis.git'
   - 'https://charts.crossplane.io/stable'
+  - 'https://github.com/open-policy-agent/gatekeeper.git'  # Gatekeeper oficial
   
   # Destinos permitidos (clusters e namespaces)
   destinations:
