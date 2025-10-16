@@ -2,7 +2,7 @@
 
 ## 📋 Estrutura de Applications
 
-O Governance foi dividido em **5 Applications** com **Sync Waves** para garantir a ordem correta:
+O Governance foi dividido em **4 Applications** com **Sync Waves** para garantir a ordem correta:
 
 ```
 Wave 0: governance-gatekeeper    → Instala OPA Gatekeeper
@@ -11,9 +11,7 @@ Wave 1: governance-policies      → ConstraintTemplates + Constraints
   ↓
 Wave 2: governance-namespaces    → Cria namespaces (dev, hlm, prod)
   ↓
-Wave 3: governance-quotas        → ResourceQuotas por namespace
-  ↓
-Wave 4: governance-rbac          → ClusterRoles e permissões
+Wave 3: governance-rbac          → ClusterRoles e permissões
 ```
 
 ---
@@ -27,7 +25,6 @@ Wave 4: governance-rbac          → ClusterRoles e permissões
 kubectl apply -f argocd/applications/06-governance-gatekeeper.yaml
 kubectl apply -f argocd/applications/07-governance-policies.yaml
 kubectl apply -f argocd/applications/08-governance-namespaces.yaml
-kubectl apply -f argocd/applications/09-governance-quotas.yaml
 kubectl apply -f argocd/applications/10-governance-rbac.yaml
 
 # Monitorar
@@ -58,10 +55,6 @@ governance/
 │   ├── namespace-dev.yaml
 │   ├── namespace-hlm.yaml
 │   └── namespace-prod.yaml
-├── quotas/             # ResourceQuotas
-│   ├── resource-quotas-dev.yaml
-│   ├── resource-quotas-hlm.yaml
-│   └── resource-quotas-prod.yaml
 └── rbac/               # ClusterRoles
     └── crossplane-viewer-role.yaml
 ```
@@ -85,15 +78,14 @@ source:
 | **0** | `governance-gatekeeper` | Instala CRDs do Gatekeeper | Pods Ready |
 | **1** | `governance-policies` | Cria ConstraintTemplates | 10s delay |
 | **2** | `governance-namespaces` | Cria namespaces | - |
-| **3** | `governance-quotas` | Aplica quotas nos namespaces | Namespaces existirem |
-| **4** | `governance-rbac` | Configura permissões | - |
+| **3** | `governance-rbac` | Configura permissões | - |
 
 ### Por que Sync Waves?
 
 **Sem Sync Waves:**
 ```
-❌ ResourceQuota aplicado antes do namespace existir
 ❌ Constraint aplicado antes do ConstraintTemplate
+❌ RBAC aplicado antes dos namespaces existirem
 ❌ Tudo falha!
 ```
 
@@ -126,10 +118,7 @@ kubectl get constraints
 # 5. Ver Namespaces
 kubectl get namespaces dev hlm prod
 
-# 6. Ver ResourceQuotas
-kubectl get resourcequota -A
-
-# 7. Ver RBAC
+# 6. Ver RBAC
 kubectl get clusterrole | grep crossplane
 ```
 
@@ -139,7 +128,6 @@ NAME                         SYNC STATUS   HEALTH STATUS
 governance-gatekeeper        Synced        Healthy
 governance-policies          Synced        Healthy
 governance-namespaces        Synced        Healthy
-governance-quotas            Synced        Healthy
 governance-rbac              Synced        Healthy
 ```
 
@@ -164,7 +152,6 @@ kubectl run test-good --image=nginx \
 ```bash
 # Deletar applications (ArgoCD remove os recursos)
 kubectl delete -f argocd/applications/10-governance-rbac.yaml
-kubectl delete -f argocd/applications/09-governance-quotas.yaml
 kubectl delete -f argocd/applications/08-governance-namespaces.yaml
 kubectl delete -f argocd/applications/07-governance-policies.yaml
 kubectl delete -f argocd/applications/06-governance-gatekeeper.yaml
@@ -180,9 +167,9 @@ kubectl delete -f argocd/applications/06-governance-gatekeeper.yaml
 2. Fazer commit e push no Git
 3. ArgoCD aplica automaticamente (se auto-sync estiver ativo)
 
-### Modificar quotas
+### Modificar RBAC
 
-1. Editar arquivo em `governance/quotas/`
+1. Editar arquivo em `governance/rbac/`
 2. Commit e push
 3. ArgoCD sincroniza automaticamente
 

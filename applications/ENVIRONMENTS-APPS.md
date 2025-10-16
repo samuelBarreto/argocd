@@ -330,8 +330,8 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 4. ✅ **Separação de ambientes**
    - Cada ambiente tem seu próprio namespace
-   - ResourceQuotas por namespace
    - RBAC apropriado
+   - Isolamento de recursos
 
 5. ✅ **Versionamento**
    - Use tags semânticas (v1.0.0)

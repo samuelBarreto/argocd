@@ -20,7 +20,7 @@ Wave 3:  Platform APIs             (04-platform-apis.yaml)
   │      └─ XRDs e Compositions
   ↓
 Wave 4:  Governance                (05-governance.yaml)
-  │      └─ Policies, Quotas, RBAC
+  │      └─ Policies, RBAC
   ↓
 Wave 5: Environment Dev           (07-environment-dev.yaml)
   │      └─ Claims do ambiente dev

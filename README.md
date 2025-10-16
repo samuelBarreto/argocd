@@ -145,7 +145,7 @@ Wave 3: Provider Configs (Credenciais)
   ↓
 Wave 4: Platform APIs (XRDs + Compositions)
   ↓
-Wave 5: Governance (Policies, Quotas, RBAC)
+Wave 5: Governance (Policies, RBAC)
   ↓
 Wave 10-12: Environment Claims (dev, hlm, prod)
 ```
@@ -259,8 +259,8 @@ kubectl get constrainttemplates
 # Constraints aplicados
 kubectl get constraints
 
-# Resource quotas
-kubectl get resourcequota -A
+# RBAC configurado
+kubectl get clusterroles | grep crossplane
 ```
 
 ## 🔄 Fluxo de Trabalho GitOps

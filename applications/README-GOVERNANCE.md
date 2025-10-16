@@ -25,14 +25,7 @@
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
-│  SYNC WAVE 3 - governance-quotas                    │
-│  ├─ ResourceQuota: dev-resource-quota               │
-│  ├─ ResourceQuota: hlm-resource-quota               │
-│  └─ ResourceQuota: prod-resource-quota              │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  SYNC WAVE 4 - governance-rbac                      │
+│  SYNC WAVE 3 - governance-rbac                      │
 │  ├─ ClusterRole: crossplane-viewer                  │
 │  ├─ ClusterRole: crossplane-platform-admin          │
 │  └─ ClusterRole: crossplane-claim-creator           │
@@ -48,7 +41,6 @@
 kubectl apply -f argocd/applications/06-governance-gatekeeper.yaml
 kubectl apply -f argocd/applications/07-governance-policies.yaml
 kubectl apply -f argocd/applications/08-governance-namespaces.yaml
-kubectl apply -f argocd/applications/09-governance-quotas.yaml
 kubectl apply -f argocd/applications/10-governance-rbac.yaml
 
 # 2. Monitorar progresso
@@ -56,7 +48,7 @@ watch kubectl get applications -n argocd
 
 # 3. Verificar (após 2-3 min)
 kubectl get constrainttemplates
-kubectl get resourcequota -A
+kubectl get namespaces
 ```
 
 ---
@@ -68,8 +60,7 @@ kubectl get resourcequota -A
 | `06-governance-gatekeeper.yaml` | 0 | Instala OPA Gatekeeper |
 | `07-governance-policies.yaml` | 1 | Policies de governança |
 | `08-governance-namespaces.yaml` | 2 | Cria namespaces |
-| `09-governance-quotas.yaml` | 3 | ResourceQuotas |
-| `10-governance-rbac.yaml` | 4 | ClusterRoles |
+| `10-governance-rbac.yaml` | 3 | ClusterRoles |
 
 ---
 

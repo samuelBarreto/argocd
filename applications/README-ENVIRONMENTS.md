@@ -204,8 +204,8 @@ kubectl get applications -n argocd -l layer=workloads
 kubectl get database,bucket,network -n dev
 kubectl get database,bucket,network -n prod
 
-# Status de ResourceQuotas
-kubectl get resourcequota -A
+# Status de RBAC
+kubectl get clusterroles | grep crossplane
 ```
 
 ## 🎯 Próximos Passos

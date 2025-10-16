@@ -355,13 +355,13 @@ subjects:
   name: platform-team
 ```
 
-### **3. Resource Quotas**
+### **3. RBAC e Permissões**
 
 ```bash
-# Já aplicados!
-kubectl get resourcequota -A
+# Ver ClusterRoles configurados
+kubectl get clusterroles | grep crossplane
 
-# Dev: 5 DBs, 10 Buckets
+# Ver permissões
 # Prod: 20 DBs, 50 Buckets
 ```
 
