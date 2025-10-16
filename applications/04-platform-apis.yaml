@@ -91,7 +91,7 @@ spec:
         factor: 2
         maxDuration: 3m
   
-  Ignorar diferenças em status
+  # Ignorar diferenças em status
   ignoreDifferences:
   - group: apiextensions.crossplane.io
     kind: CompositeResourceDefinition
