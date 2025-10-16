@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-apis-storage
+  name: platform-apis-all
   namespace: argocd
   labels:
-    app.kubernetes.io/name: platform-apis-storage
+    app.kubernetes.io/name: platform-apis-all
     layer: platform
   annotations:
     argocd.argoproj.io/sync-wave: "3"  # Deploy após provider configs
@@ -17,7 +17,7 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/platform-apis.git  # ALTERAR
     targetRevision: main
-    path: storage
+    path: 
     directory:
       recurse: true
   
@@ -50,54 +50,54 @@ spec:
     jsonPointers:
     - /status
 
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: platform-apis-functions
-  namespace: argocd
-  labels:
-    app.kubernetes.io/name: platform-apis-functions
-    layer: platform
-  annotations:
-    argocd.argoproj.io/sync-wave: "3"  # Deploy após provider configs
-  finalizers:
-  - resources-finalizer.argocd.argoproj.io
-spec:
-  project: platform
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: platform-apis-functions
+#   namespace: argocd
+#   labels:
+#     app.kubernetes.io/name: platform-apis-functions
+#     layer: platform
+#   annotations:
+#     argocd.argoproj.io/sync-wave: "3"  # Deploy após provider configs
+#   finalizers:
+#   - resources-finalizer.argocd.argoproj.io
+# spec:
+#   project: platform
   
-  source:
-    repoURL: https://github.com/samuelBarreto/platform-apis.git  # ALTERAR
-    targetRevision: main
-    path: functions
-    directory:
-      recurse: true
+#   source:
+#     repoURL: https://github.com/samuelBarreto/platform-apis.git  # ALTERAR
+#     targetRevision: main
+#     path: functions
+#     directory:
+#       recurse: true
   
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: crossplane-system
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: crossplane-system
   
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-    - CreateNamespace=true
-    - ServerSideApply=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+#     syncOptions:
+#     - CreateNamespace=true
+#     - ServerSideApply=true
+#     retry:
+#       limit: 5
+#       backoff:
+#         duration: 5s
+#         factor: 2
+#         maxDuration: 3m
   
-  # Ignorar diferenças em status
-  ignoreDifferences:
-  - group: apiextensions.crossplane.io
-    kind: CompositeResourceDefinition
-    jsonPointers:
-    - /status
-  - group: apiextensions.crossplane.io
-    kind: Composition
-    jsonPointers:
-    - /status
+#   Ignorar diferenças em status
+#   ignoreDifferences:
+#   - group: apiextensions.crossplane.io
+#     kind: CompositeResourceDefinition
+#     jsonPointers:
+#     - /status
+#   - group: apiextensions.crossplane.io
+#     kind: Composition
+#     jsonPointers:
+#     - /status
