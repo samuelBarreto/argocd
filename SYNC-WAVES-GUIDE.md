@@ -7,28 +7,25 @@ Sync Waves controlam a **ordem** em que o ArgoCD cria resources/applications. N�
 ## 📊 Ordem Atual Configurada:
 
 ```
-Wave 0:  Crossplane Core           (01-crossplane-core.yaml)
-  │      └─ Aguarda ficar Healthy antes de continuar
+Wave 1:  Providers                 (00-crossplane-providers.yaml)
+  │      └─ Aguarda providers instalarem e ficarem HEALTHY
   ↓
-Wave 1:  Providers                 (02-crossplane-providers.yaml)
-  │      └─ Aguarda providers instalarem
+Wave 2:  Provider Configs          (01-aws-provider-configs.yaml)
+  │      └─ Configura credenciais AWS
   ↓
-Wave 2:  Provider Configs          (03-aws-provider-configs.yaml)
-  │      └─ Configura credenciais
-  ↓
-Wave 3:  Platform APIs             (04-platform-apis.yaml)
+Wave 3:  Platform APIs             (02-platform-apis.yaml)
   │      └─ XRDs e Compositions
   ↓
-Wave 4:  Governance                (05-governance.yaml)
-  │      └─ Policies, RBAC
+Wave 4:  Governance                (03-governance-namespaces.yaml, 04-governance-rbac.yaml)
+  │      └─ Namespaces e RBAC
   ↓
-Wave 5: Environment Dev           (07-environment-dev.yaml)
+Wave 5: Environment Dev           (05-environment-dev.yaml)
   │      └─ Claims do ambiente dev
   ↓
-Wave 6: Environment HML           (08-environment-hml.yaml)
+Wave 6: Environment HML           (06-environment-hml.yaml)
   │      └─ Claims do ambiente hlm
   ↓
-Wave 7: Environment Prod          (09-environment-prod.yaml)
+Wave 7: Environment Prod          (07-environment-prod.yaml)
          └─ Claims do ambiente prod
 ```
 
@@ -44,9 +41,8 @@ metadata:
 
 ### Números Recomendados:
 
-- **Wave 0**: Infraestrutura base (Crossplane core)
-- **Wave 1-5**: Componentes de plataforma
-- **Wave 10+**: Aplicações e claims
+- **Wave 1-4**: Componentes de plataforma (Providers, Configs, APIs, Governance)
+- **Wave 5-7**: Ambientes e claims (Dev, HML, Prod)
 
 ## ⏱️ Sync com Espera (Recomendado)
 
@@ -129,7 +125,7 @@ spec:
         maxDuration: 3m
 ```
 
-### 02-crossplane-providers.yaml
+### 00-crossplane-providers.yaml
 ```yaml
 metadata:
   annotations:
@@ -148,7 +144,7 @@ spec:
         maxDuration: 10m
 ```
 
-### 03-provider-configs.yaml
+### 01-aws-provider-configs.yaml
 ```yaml
 metadata:
   annotations:
@@ -160,7 +156,7 @@ spec:
       selfHeal: true
 ```
 
-### 04-platform-apis.yaml
+### 02-platform-apis.yaml
 ```yaml
 metadata:
   annotations:
@@ -172,7 +168,7 @@ spec:
       selfHeal: true
 ```
 
-### 05-governance.yaml
+### 03-governance-namespaces.yaml e 04-governance-rbac.yaml
 ```yaml
 metadata:
   annotations:
@@ -180,11 +176,11 @@ metadata:
 spec:
   syncPolicy:
     automated:
-      prune: true
+      prune: true  # false para namespaces (segurança)
       selfHeal: true
 ```
 
-### 07-environment-dev.yaml
+### 05-environment-dev.yaml
 ```yaml
 metadata:
   annotations:
@@ -205,16 +201,20 @@ ArgoCD vê bootstrap-app
   │
   ├─ Mas sync respeitando waves:
   │
-  ├─ Wave 0: Sync crossplane-core
-  │   └─ Aguarda ficar Healthy/Synced
-  │   
   ├─ Wave 1: Sync crossplane-providers
   │   └─ Aguarda ficar Healthy/Synced
   │   
   ├─ Wave 2: Sync provider-configs
   │   └─ Aguarda ficar Synced
   │   
-  └─ ... e assim por diante
+  ├─ Wave 3: Sync platform-apis
+  │   └─ Aguarda XRDs ficarem established
+  │   
+  ├─ Wave 4: Sync governance (namespaces + rbac)
+  │   └─ Aguarda ficar Synced
+  │   
+  └─ Waves 5-7: Sync environments (dev, hml, prod)
+      └─ Aguarda cada wave terminar antes da próxima
 ```
 
 ## ⏰ Controle de Timing:

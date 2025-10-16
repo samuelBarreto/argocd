@@ -98,14 +98,14 @@ Total: ~30-40 minutos após Crossplane instalado
 
 | Arquivo | Wave | Descrição |
 |---------|------|-----------|
-| `02-crossplane-providers.yaml` | 1 | Instala providers AWS/Azure/GCP |
-| `03-aws-provider-configs.yaml` | 2 | Configura credenciais AWS |
-| `04-platform-apis.yaml` | 3 | XRDs (Bucket, Database, Network) |
-| `08-governance-namespaces.yaml` | 4 | Namespaces (dev, hlm, prod) |
-| `10-governance-rbac.yaml` | 4 | ClusterRoles e permissões |
-| `07-environment-dev.yaml` | 5 | Claims de desenvolvimento |
-| `08-environment-hml.yaml` | 6 | Claims de homologação |
-| `09-environment-prod.yaml` | 7 | Claims de produção |
+| `00-crossplane-providers.yaml` | 1 | Instala providers AWS/Azure/GCP |
+| `01-aws-provider-configs.yaml` | 2 | Configura credenciais AWS |
+| `02-platform-apis.yaml` | 3 | XRDs (Bucket, Database, Network) |
+| `03-governance-namespaces.yaml` | 4 | Namespaces (dev, hlm, prod) |
+| `04-governance-rbac.yaml` | 4 | ClusterRoles e permissões |
+| `05-environment-dev.yaml` | 5 | Claims de desenvolvimento |
+| `06-environment-hml.yaml` | 6 | Claims de homologação |
+| `07-environment-prod.yaml` | 7 | Claims de produção |
 
 ---
 

@@ -24,8 +24,9 @@ environments/
 Crie uma Application para cada ambiente:
 
 ```yaml
-# 07-environment-dev.yaml
-# 08-environment-prod.yaml
+# 05-environment-dev.yaml
+# 06-environment-hml.yaml
+# 07-environment-prod.yaml
 ```
 
 **Vantagens:**
@@ -35,8 +36,9 @@ Crie uma Application para cada ambiente:
 
 **Aplicar:**
 ```bash
-kubectl apply -f argocd/applications/07-environment-dev.yaml
-kubectl apply -f argocd/applications/08-environment-prod.yaml
+kubectl apply -f argocd/applications/05-environment-dev.yaml
+kubectl apply -f argocd/applications/06-environment-hml.yaml
+kubectl apply -f argocd/applications/07-environment-prod.yaml
 ```
 
 ---
@@ -121,8 +123,9 @@ kubectl apply -f argocd/projects/platform-project.yaml
 
 **Opção A: Applications Individuais**
 ```bash
-kubectl apply -f argocd/applications/07-environment-dev.yaml
-kubectl apply -f argocd/applications/08-environment-prod.yaml
+kubectl apply -f argocd/applications/05-environment-dev.yaml
+kubectl apply -f argocd/applications/06-environment-hml.yaml
+kubectl apply -f argocd/applications/07-environment-prod.yaml
 ```
 
 **Opção B: ApplicationSet**

@@ -6,7 +6,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 1: Cloud Providers                                     │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 02-crossplane-providers.yaml                             │
+│  ✅ 00-crossplane-providers.yaml                             │
 │     └─ Instala Providers AWS, Azure, GCP                    │
 │        Aguarda: Providers HEALTHY=True                       │
 └──────────────────────────────────────────────────────────────┘
@@ -15,7 +15,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 2: Provider Configurations                             │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 03-aws-provider-configs.yaml                             │
+│  ✅ 01-aws-provider-configs.yaml                             │
 │     └─ Configura credenciais e ProviderConfigs              │
 │        Aguarda: ProviderConfigs criados                      │
 └──────────────────────────────────────────────────────────────┘
@@ -24,7 +24,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 3: Platform APIs                                       │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 04-platform-apis.yaml                                    │
+│  ✅ 02-platform-apis.yaml                                    │
 │     └─ XRDs (Database, Network, Bucket)                     │
 │     └─ Compositions (templates de infraestrutura)           │
 │        Aguarda: XRDs e Compositions criados                  │
@@ -34,8 +34,8 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 4: Governance Resources                               │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 08-governance-namespaces.yaml                            │
-│  ✅ 10-governance-rbac.yaml                                  │
+│  ✅ 03-governance-namespaces.yaml                            │
+│  ✅ 04-governance-rbac.yaml                                  │
 │     └─ Namespaces (dev, hlm, prod)                         │
 │     └─ RBAC Roles                                           │
 │        Aguarda: Recursos criados                             │
@@ -45,7 +45,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 5: Development Environment                            │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 07-environment-dev.yaml                                  │
+│  ✅ 05-environment-dev.yaml                                  │
 │     └─ Claims de desenvolvimento                            │
 │        (Databases, Networks, Buckets)                        │
 └──────────────────────────────────────────────────────────────┘
@@ -54,7 +54,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 6: Homologation Environment                           │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 08-environment-hml.yaml                                  │
+│  ✅ 06-environment-hml.yaml                                  │
 │     └─ Claims de homologação                                │
 └──────────────────────────────────────────────────────────────┘
                            │
@@ -62,7 +62,7 @@
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 7: Production Environment                             │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 09-environment-prod.yaml                                 │
+│  ✅ 07-environment-prod.yaml                                 │
 │     └─ Claims de produção                                   │
 │        (Apenas após dev e hml testados!)                    │
 └──────────────────────────────────────────────────────────────┘

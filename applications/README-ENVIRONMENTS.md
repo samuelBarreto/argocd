@@ -3,8 +3,9 @@
 ## ✅ Arquivos Criados
 
 ### Applications Individuais
-1. ✅ `07-environment-dev.yaml` - Application para dev/claims/
-2. ✅ `08-environment-prod.yaml` - Application para prod/claims/
+1. ✅ `05-environment-dev.yaml` - Application para dev/claims/
+2. ✅ `06-environment-hml.yaml` - Application para hlm/claims/
+3. ✅ `07-environment-prod.yaml` - Application para prod/claims/
 
 ### ApplicationSet
 3. ✅ `environments-appset.yaml` - Gerencia dev, prod e hlm automaticamente
@@ -49,8 +50,9 @@ git push -u origin main
 
 ```bash
 # Aplicar
-kubectl apply -f argocd/applications/07-environment-dev.yaml
-kubectl apply -f argocd/applications/08-environment-prod.yaml
+kubectl apply -f argocd/applications/05-environment-dev.yaml
+kubectl apply -f argocd/applications/06-environment-hml.yaml
+kubectl apply -f argocd/applications/07-environment-prod.yaml
 
 # Verificar
 kubectl get applications -n argocd | grep environment

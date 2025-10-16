@@ -12,14 +12,14 @@ argocd/
 │   └── tenant-project.yaml         # Projeto para Developers
 │
 ├── applications/                   # 📦 Declaração de cada componente
-│   ├── 02-crossplane-providers.yaml # Instala Providers (AWS, Azure, GCP)
-│   ├── 03-aws-provider-configs.yaml # Configura credenciais AWS
-│   ├── 04-platform-apis.yaml       # Instala XRDs e Compositions
-│   ├── 07-environment-dev.yaml     # Claims de desenvolvimento
-│   ├── 08-environment-hml.yaml     # Claims de homologação
-│   ├── 08-governance-namespaces.yaml # Namespaces (dev, hlm, prod)
-│   ├── 09-environment-prod.yaml    # Claims de produção
-│   └── 10-governance-rbac.yaml     # RBAC roles
+│   ├── 00-crossplane-providers.yaml # Instala Providers (AWS, Azure, GCP)
+│   ├── 01-aws-provider-configs.yaml # Configura credenciais AWS
+│   ├── 02-platform-apis.yaml       # Instala XRDs e Compositions
+│   ├── 03-governance-namespaces.yaml # Namespaces (dev, hlm, prod)
+│   ├── 04-governance-rbac.yaml     # RBAC roles
+│   ├── 05-environment-dev.yaml     # Claims de desenvolvimento
+│   ├── 06-environment-hml.yaml     # Claims de homologação
+│   └── 07-environment-prod.yaml    # Claims de produção
 │
 └── applicationsets/                # 🔄 Multi-tenant/Multi-env
     └── environment-claims.yaml     # Deploy claims por ambiente
