@@ -17,7 +17,7 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/platform-apis.git  # ALTERAR
     targetRevision: main
-    path: .
+    path: storage
     directory:
       recurse: true
 
