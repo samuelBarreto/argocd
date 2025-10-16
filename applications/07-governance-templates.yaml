@@ -2,25 +2,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: governance-policies
+  name: governance-constraint-templates
   namespace: argocd
   labels:
-    app.kubernetes.io/name: governance-policies
+    app.kubernetes.io/name: governance-templates
     layer: security
   annotations:
-    argocd.argoproj.io/sync-wave: "2"  # Após ConstraintTemplates
+    argocd.argoproj.io/sync-wave: "1"  # Após Gatekeeper
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   project: platform
   
   source:
-    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR para seu repo
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR
     targetRevision: main
     path: policies
     directory:
       recurse: true
-      exclude: '*-template.yaml'  # Apenas Constraints (sem templates)
+      include: '*-template.yaml'  # Apenas ConstraintTemplates
   
   destination:
     server: https://kubernetes.default.svc
@@ -33,14 +33,12 @@ spec:
     syncOptions:
     - CreateNamespace=true
     - RespectIgnoreDifferences=true
-    - ApplyOutOfSyncOnly=true
-    - SkipDryRunOnMissingResource=true  # Não falhar se CRDs ainda não existirem
     retry:
-      limit: 15  # Mais tentativas para aguardar Gatekeeper
+      limit: 10
       backoff:
-        duration: 30s  # Mais tempo entre tentativas
+        duration: 20s
         factor: 2
-        maxDuration: 15m
+        maxDuration: 10m
   
   # Ignorar diferenças em status
   ignoreDifferences:
