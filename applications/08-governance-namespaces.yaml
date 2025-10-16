@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: governance-namespaces
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: governance-namespaces
+    layer: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # TERCEIRO - Após Policies
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR para seu repo
+    targetRevision: main
+    path: namespaces
+    directory:
+      recurse: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+  
+  syncPolicy:
+    automated:
+      prune: false  # Não deletar namespaces automaticamente (segurança)
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=false  # Não precisa criar namespace (cria os namespaces)
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+

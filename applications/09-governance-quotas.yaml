@@ -1,0 +1,37 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: governance-quotas
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: governance-quotas
+    layer: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"  # QUARTO - Após Namespaces
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR para seu repo
+    targetRevision: main
+    path: quotas
+    directory:
+      recurse: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+

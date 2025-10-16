@@ -1,0 +1,47 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: governance-policies
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: governance-policies
+    layer: security
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # SEGUNDO - Após Gatekeeper
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/governance.git  # ALTERAR para seu repo
+    targetRevision: main
+    path: policies
+    directory:
+      recurse: true
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gatekeeper-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 10s  # Maior delay para ConstraintTemplates processarem
+        factor: 2
+        maxDuration: 5m
+  
+  # Ignorar diferenças em status
+  ignoreDifferences:
+  - group: templates.gatekeeper.sh
+    kind: ConstraintTemplate
+    jsonPointers:
+    - /status
+
