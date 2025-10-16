@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: governance-namespaces
     layer: platform
   annotations:
-    argocd.argoproj.io/sync-wave: "2"  # Após Policies
+    argocd.argoproj.io/sync-wave: "4"  # Após Platform APIs
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:

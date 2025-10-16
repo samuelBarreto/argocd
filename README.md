@@ -12,12 +12,14 @@ argocd/
 │   └── tenant-project.yaml         # Projeto para Developers
 │
 ├── applications/                   # 📦 Declaração de cada componente
-│   ├── 01-crossplane-core.yaml     # Instala Crossplane
 │   ├── 02-crossplane-providers.yaml # Instala Providers (AWS, Azure, GCP)
-│   ├── 03-provider-configs.yaml    # Configura credenciais
+│   ├── 03-aws-provider-configs.yaml # Configura credenciais AWS
 │   ├── 04-platform-apis.yaml       # Instala XRDs e Compositions
-│   ├── 05-governance.yaml          # Instala Policies
-│   └── 06-argocd-ingress.yaml      # Expõe ArgoCD (opcional)
+│   ├── 07-environment-dev.yaml     # Claims de desenvolvimento
+│   ├── 08-environment-hml.yaml     # Claims de homologação
+│   ├── 08-governance-namespaces.yaml # Namespaces (dev, hlm, prod)
+│   ├── 09-environment-prod.yaml    # Claims de produção
+│   └── 10-governance-rbac.yaml     # RBAC roles
 │
 └── applicationsets/                # 🔄 Multi-tenant/Multi-env
     └── environment-claims.yaml     # Deploy claims por ambiente
@@ -41,8 +43,8 @@ argocd/
         │              │              │
         ▼              ▼              ▼
 ┌──────────────┐ ┌──────────┐ ┌────────────┐
-│ Crossplane   │ │Providers │ │Platform    │
-│   Core       │ │          │ │  APIs      │
+│  Providers   │ │ Provider │ │Platform    │
+│ (AWS/Azure)  │ │ Configs  │ │  APIs      │
 └──────────────┘ └──────────┘ └────────────┘
 ```
 
@@ -54,14 +56,32 @@ argocd/
 # 1. Cluster Kubernetes rodando
 kubectl cluster-info
 
-# 2. ArgoCD instalado
-kubectl get pods -n argocd
-
-# 3. kubectl configurado
+# 2. kubectl configurado
 kubectl config current-context
 ```
 
-### 1️⃣ Instalar ArgoCD (se não estiver instalado)
+### 1️⃣ Instalar Crossplane (MANUAL)
+
+```bash
+# Instalar via Helm
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo update
+
+helm install crossplane \
+  --namespace crossplane-system \
+  --create-namespace \
+  crossplane-stable/crossplane \
+  --wait
+
+# Verificar instalação
+kubectl get pods -n crossplane-system
+kubectl wait --for=condition=Ready pods --all -n crossplane-system --timeout=300s
+
+# Verificar CRDs
+kubectl get crds | grep crossplane
+```
+
+### 2️⃣ Instalar ArgoCD (MANUAL)
 
 ```bash
 # Criar namespace
@@ -73,18 +93,20 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 # Aguardar pods ficarem Ready
 kubectl wait --for=condition=Ready pods --all -n argocd --timeout=300s
 
-# Obter senha inicial
+# Obter senha inicial (admin)
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath="{.data.password}" | base64 -d && echo
 
+# Port forward para acessar UI (opcional)
 kubectl port-forward -n argocd svc/argocd-server 8080:443
 ```
 
-### 2️⃣ Aplicar AppProjects (Separação de Permissões)
+### 3️⃣ Aplicar AppProjects (Separação de Permissões)
 
 ```bash
 # Aplicar projetos
-kubectl apply -f argocd/projects/
+kubectl apply -f argocd/projects/platform-project.yaml
+kubectl apply -f argocd/projects/tenant-project.yaml
 
 # Verificar
 kubectl get appproject -n argocd
@@ -99,10 +121,13 @@ kubectl get appproject -n argocd
 - `platform`: Acesso total para Platform Team
 - `tenant`: Acesso restrito para Developers
 
-### 3️⃣ Aplicar Bootstrap (App of Apps)
+### 4️⃣ Aplicar Bootstrap (App of Apps)
 
 ```bash
-# Este é o ÚNICO comando manual necessário!
+# IMPORTANTE: Editar bootstrap-app.yaml primeiro!
+# Alterar repoURL para seu repositório Git
+
+# Aplicar bootstrap
 kubectl apply -f argocd/bootstrap/bootstrap-app.yaml
 
 # Verificar criação
@@ -113,7 +138,7 @@ kubectl get application -n argocd
 # crossplane-bootstrap    Synced        Healthy
 ```
 
-### 4️⃣ Aguardar Apps Serem Criadas
+### 5️⃣ Aguardar Apps Serem Criadas
 
 ```bash
 # Watch todas as applications
@@ -121,45 +146,54 @@ kubectl get applications -n argocd -w
 
 # Após ~30 segundos, você verá:
 # crossplane-bootstrap          Synced        Healthy
-# crossplane-core              Synced        Progressing
 # crossplane-providers         OutOfSync     Missing
-# provider-configs             OutOfSync     Missing
+# aws-provider-configs         OutOfSync     Missing
 # platform-apis                OutOfSync     Missing
-# governance-policies          OutOfSync     Missing
+# governance-namespaces        OutOfSync     Missing
+# governance-rbac              OutOfSync     Missing
+# environment-dev              OutOfSync     Missing
+# environment-hml              OutOfSync     Missing
+# environment-prod             OutOfSync     Missing
 ```
 
 **Pressione Ctrl+C** quando ver as apps aparecerem.
 
-### 5️⃣ Entender a Ordem de Deploy (Sync Waves)
+### 6️⃣ Entender a Ordem de Deploy (Sync Waves)
 
 As applications são deployadas nesta ordem automática:
 
 ```
-Wave 0: ArgoCD Ingress (se configurado)
+Wave 1: Providers (AWS, Azure, GCP)
+  ↓ (aguarda providers ficarem HEALTHY)
+Wave 2: Provider Configs (Credenciais)
+  ↓ (aguarda configs serem criados)
+Wave 3: Platform APIs (XRDs + Compositions)
+  ↓ (aguarda XRDs ficarem established)
+Wave 4: Governance (Namespaces + RBAC)
+  ↓ (aguarda recursos serem criados)
+Wave 5: Environment Dev (Claims de desenvolvimento)
   ↓
-Wave 1: Crossplane Core
+Wave 6: Environment HML (Claims de homologação)
   ↓
-Wave 2: Providers (AWS, Azure, GCP)
-  ↓
-Wave 3: Provider Configs (Credenciais)
-  ↓
-Wave 4: Platform APIs (XRDs + Compositions)
-  ↓
-Wave 5: Governance (Policies, RBAC)
-  ↓
-Wave 10-12: Environment Claims (dev, hlm, prod)
+Wave 7: Environment Prod (Claims de produção)
 ```
 
-### 6️⃣ Monitorar Deploy
+### 7️⃣ Monitorar Deploy
 
 ```bash
-# Ver status de todas as apps
-kubectl get applications -n argocd
+# Ver status de todas as apps com suas waves
+kubectl get applications -n argocd \
+  -o custom-columns=\
+NAME:.metadata.name,\
+WAVE:.metadata.annotations."argocd\.argoproj\.io/sync-wave",\
+SYNC:.status.sync.status,\
+HEALTH:.status.health.status \
+  --sort-by=.metadata.annotations."argocd\.argoproj\.io/sync-wave"
 
 # Ver detalhes de uma app específica
-kubectl describe application crossplane-core -n argocd
+kubectl describe application crossplane-providers -n argocd
 
-# Ver sync status
+# Ver sync status detalhado
 kubectl get applications -n argocd -o json | \
   jq -r '.items[] | "\(.metadata.name): \(.status.sync.status) - \(.status.health.status)"'
 ```
@@ -174,15 +208,15 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 # Abrir browser em: https://localhost:8080
 # Username: admin
-# Password: (do passo 1)
+# Password: (obtido no passo 2)
 ```
 
 ### Opção 2: Via Ingress (produção)
 
-Se você configurou o ingress (arquivo 06-argocd-ingress.yaml):
+Se você configurou um ingress:
 
 ```bash
-# Ver URL do ALB
+# Ver URL do ingress
 kubectl get ingress argocd-server -n argocd
 
 # Acessar via browser usando o ADDRESS mostrado
@@ -207,13 +241,13 @@ argocd login localhost:8080
 argocd app list
 
 # Ver detalhes
-argocd app get crossplane-core
+argocd app get crossplane-providers
 
 # Sync manual (se necessário)
-argocd app sync crossplane-core
+argocd app sync crossplane-providers
 
 # Ver logs
-argocd app logs crossplane-core
+argocd app logs crossplane-providers
 ```
 
 ## 🔍 Verificação Completa
@@ -227,11 +261,12 @@ kubectl get applications -n argocd
 # Exemplo de output esperado após 10-15 min:
 # NAME                      SYNC      HEALTH
 # crossplane-bootstrap      Synced    Healthy
-# crossplane-core          Synced    Healthy
 # crossplane-providers     Synced    Healthy
-# provider-configs         Synced    Healthy
+# aws-provider-configs     Synced    Healthy
 # platform-apis            Synced    Healthy
-# governance-policies      Synced    Healthy
+# governance-namespaces    Synced    Healthy
+# governance-rbac          Synced    Healthy
+# environment-dev          Synced    Healthy
 ```
 
 ### Verificar Crossplane
@@ -240,27 +275,43 @@ kubectl get applications -n argocd
 # Pods do Crossplane
 kubectl get pods -n crossplane-system
 
-# Providers instalados
+# Providers instalados e HEALTHY
 kubectl get providers
+
+# Output esperado:
+# NAME                   INSTALLED   HEALTHY   PACKAGE                               AGE
+# provider-aws           True        True      xpkg.upbound.io/upbound/provider-aws  5m
 
 # XRDs disponíveis
 kubectl get xrd
 
+# Output esperado:
+# NAME                              ESTABLISHED   OFFERED   AGE
+# xbuckets.platform.example.com     True          True      3m
+# xdatabases.platform.example.com   True          True      3m
+# xnetworks.platform.example.com    True          True      3m
+
 # Compositions disponíveis
 kubectl get composition
+
+# Output esperado:
+# NAME                                 XR-KIND    XR-APIVERSION                     AGE
+# xbuckets.aws.platform.example.com    XBucket    platform.example.com/v1alpha1    3m
 ```
 
 ### Verificar Governance
 
 ```bash
-# Policies instaladas
-kubectl get constrainttemplates
-
-# Constraints aplicados
-kubectl get constraints
+# Namespaces criados
+kubectl get namespaces | grep -E 'dev|hlm|prod'
 
 # RBAC configurado
 kubectl get clusterroles | grep crossplane
+
+# Output esperado:
+# crossplane-viewer
+# crossplane-platform-admin
+# crossplane-claim-creator
 ```
 
 ## 🔄 Fluxo de Trabalho GitOps
@@ -269,20 +320,20 @@ kubectl get clusterroles | grep crossplane
 
 ```bash
 # 1. Editar arquivos localmente
-# Exemplo: adicionar novo provider
-vim crossplane-system/providers/provider-aws.yaml
+# Exemplo: adicionar novo claim
+vim environments/dev/claims/my-new-bucket.yaml
 
 # 2. Commit e push
 git add .
-git commit -m "Add new AWS provider"
+git commit -m "Add new bucket claim"
 git push origin main
 
 # 3. ArgoCD detecta mudança automaticamente (< 3 min)
 # Ou force sync:
-argocd app sync crossplane-providers
+argocd app sync environment-dev
 
 # 4. Verificar aplicação
-kubectl get providers
+kubectl get bucket -n dev
 ```
 
 ### Adicionar Nova Application
@@ -297,7 +348,7 @@ metadata:
   name: my-new-app
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: platform
   source:
@@ -311,6 +362,8 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
 ```
 
 2. **Commit e push**:
@@ -329,26 +382,26 @@ git push
 
 ```bash
 # Ver detalhes do erro
-kubectl describe application crossplane-core -n argocd
+kubectl describe application crossplane-providers -n argocd
 
 # Ver logs do application controller
-kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller
+kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=100
 
 # Force refresh
-argocd app get crossplane-core --refresh
+argocd app get crossplane-providers --refresh
 
 # Force sync
-argocd app sync crossplane-core --force
+argocd app sync crossplane-providers --force
 ```
 
 ### App fica em "OutOfSync"
 
 ```bash
 # Ver o que está diferente
-argocd app diff crossplane-core
+argocd app diff crossplane-providers
 
 # Auto-sync não habilitado?
-kubectl patch application crossplane-core -n argocd \
+kubectl patch application crossplane-providers -n argocd \
   --type merge \
   -p '{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
 ```
@@ -359,11 +412,33 @@ kubectl patch application crossplane-core -n argocd \
 # Verificar se Crossplane está rodando
 kubectl get pods -n crossplane-system
 
-# Verificar events
+# Verificar events do provider
 kubectl get events -n crossplane-system --sort-by='.lastTimestamp'
 
 # Verificar logs do Crossplane
-kubectl logs -n crossplane-system -l app=crossplane
+kubectl logs -n crossplane-system -l app=crossplane --tail=50
+
+# Verificar configuração do provider
+kubectl describe provider provider-aws
+```
+
+### Claims ficam em Pending
+
+```bash
+# Verificar se XRD existe
+kubectl get xrd
+
+# Verificar se Composition existe
+kubectl get composition
+
+# Verificar se ProviderConfig está configurado
+kubectl get providerconfig
+
+# Ver detalhes do claim
+kubectl describe bucket -n dev <bucket-name>
+
+# Ver eventos
+kubectl get events -n dev --sort-by='.lastTimestamp'
 ```
 
 ## 📚 Estrutura Detalhada dos Arquivos
@@ -373,7 +448,7 @@ kubectl logs -n crossplane-system -l app=crossplane
 **Propósito**: App of Apps - Cria todas as outras applications
 
 **Key Points**:
-- `source.path: argocd/applications` - Lê todos os YAMLs dessa pasta
+- `source.path: applications` - Lê todos os YAMLs da pasta applications
 - `automated: true` - Sincroniza automaticamente
 - `prune: true` - Remove recursos deletados do Git
 - `selfHeal: true` - Corrige drift
@@ -424,20 +499,25 @@ spec:
 # Status geral
 kubectl get applications -n argocd
 
+# Status com waves
+kubectl get applications -n argocd \
+  -o custom-columns=NAME:.metadata.name,WAVE:.metadata.annotations."argocd\.argoproj\.io/sync-wave",SYNC:.status.sync.status,HEALTH:.status.health.status \
+  --sort-by=.metadata.annotations."argocd\.argoproj\.io/sync-wave"
+
 # Sync todas as apps
 argocd app sync -l app.kubernetes.io/instance=crossplane-bootstrap
 
 # Ver histórico de sync
-argocd app history crossplane-core
+argocd app history crossplane-providers
 
 # Rollback
-argocd app rollback crossplane-core
+argocd app rollback crossplane-providers
 
 # Delete application (mantém recursos)
-kubectl delete application crossplane-core -n argocd
+kubectl delete application crossplane-providers -n argocd
 
 # Delete application (remove recursos)
-argocd app delete crossplane-core --cascade
+argocd app delete crossplane-providers --cascade
 ```
 
 ## 🔐 Best Practices
@@ -448,16 +528,35 @@ argocd app delete crossplane-core --cascade
 4. ✅ **Enable Auto-Sync** - GitOps verdadeiro
 5. ✅ **Enable Self-Heal** - Corrige drift automaticamente
 6. ✅ **Enable Prune** - Remove recursos órfãos
-7. ✅ **Use Git como Source of Truth** - Nunca aplique `kubectl apply` manualmente
+7. ✅ **Use Git como Source of Truth** - Nunca aplique `kubectl apply` manualmente (exceto para Crossplane e ArgoCD)
+8. ✅ **Instale Crossplane e ArgoCD manualmente** - São os únicos componentes que precisam de instalação manual
+
+## 📝 Resumo da Instalação
+
+1. **Manual (uma vez)**:
+   - Instalar Crossplane via Helm
+   - Instalar ArgoCD
+   - Aplicar Projects
+   - Aplicar Bootstrap
+
+2. **Automático (via ArgoCD)**:
+   - Providers
+   - Provider Configs
+   - Platform APIs
+   - Governance
+   - Environments
 
 ## 🆘 Precisa de Ajuda?
 
-- **Logs do ArgoCD**: `kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller`
+- **Logs do ArgoCD**: `kubectl logs -n argocd -l app.kubernetes.io/name=argocd-application-controller --tail=100`
 - **Events**: `kubectl get events -n argocd --sort-by='.lastTimestamp'`
 - **ArgoCD UI**: Melhor forma de debugar visualmente
 - **Docs**: https://argo-cd.readthedocs.io/
 
 ---
 
-**Resumo**: Você só precisa rodar `kubectl apply -f argocd/bootstrap/bootstrap-app.yaml` e o ArgoCD cuida do resto! 🚀
-
+**Resumo**: 
+1. Instale Crossplane e ArgoCD manualmente
+2. Execute `kubectl apply -f argocd/projects/`
+3. Execute `kubectl apply -f argocd/bootstrap/bootstrap-app.yaml` 
+4. ArgoCD cuida do resto! 🚀

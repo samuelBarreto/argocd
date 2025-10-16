@@ -4,15 +4,6 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  Wave 0: Infraestrutura Base                                 │
-├──────────────────────────────────────────────────────────────┤
-│  ✅ 01-crossplane-core.yaml                                  │
-│     └─ Instala Crossplane (Helm chart ou manifests)         │
-│        Aguarda: Pods crossplane ficarem Ready                │
-└──────────────────────────────────────────────────────────────┘
-                           │
-                           ↓ (aguarda wave 0 terminar)
-┌──────────────────────────────────────────────────────────────┐
 │  Wave 1: Cloud Providers                                     │
 ├──────────────────────────────────────────────────────────────┤
 │  ✅ 02-crossplane-providers.yaml                             │
@@ -25,7 +16,6 @@
 │  Wave 2: Provider Configurations                             │
 ├──────────────────────────────────────────────────────────────┤
 │  ✅ 03-aws-provider-configs.yaml                             │
-│  ✅ 03-azure-provider-configs.yaml                           │
 │     └─ Configura credenciais e ProviderConfigs              │
 │        Aguarda: ProviderConfigs criados                      │
 └──────────────────────────────────────────────────────────────┘
@@ -42,12 +32,13 @@
                            │
                            ↓ (aguarda wave 3 terminar)
 ┌──────────────────────────────────────────────────────────────┐
-│  Wave 4: Governance & Security                               │
+│  Wave 4: Governance Resources                               │
 ├──────────────────────────────────────────────────────────────┤
-│  ✅ 05-governance.yaml                                       │
-│     └─ OPA Policies                                         │
+│  ✅ 08-governance-namespaces.yaml                            │
+│  ✅ 10-governance-rbac.yaml                                  │
+│     └─ Namespaces (dev, hlm, prod)                         │
 │     └─ RBAC Roles                                           │
-│        Aguarda: Policies ativas                              │
+│        Aguarda: Recursos criados                             │
 └──────────────────────────────────────────────────────────────┘
                            │
                            ↓ (aguarda wave 4 terminar)
@@ -59,7 +50,7 @@
 │        (Databases, Networks, Buckets)                        │
 └──────────────────────────────────────────────────────────────┘
                            │
-                           ↓ (aguarda wave 10 terminar)
+                           ↓ (aguarda wave 5 terminar)
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 6: Homologation Environment                           │
 ├──────────────────────────────────────────────────────────────┤
@@ -67,7 +58,7 @@
 │     └─ Claims de homologação                                │
 └──────────────────────────────────────────────────────────────┘
                            │
-                           ↓ (aguarda wave 11 terminar)
+                           ↓ (aguarda wave 6 terminar)
 ┌──────────────────────────────────────────────────────────────┐
 │  Wave 7: Production Environment                             │
 ├──────────────────────────────────────────────────────────────┤
@@ -81,16 +72,49 @@
 
 | Wave | App | Tempo Estimado | Acumulado |
 |------|-----|----------------|-----------|
-| 0 | Crossplane Core | 2-3 min | 3 min |
-| 1 | Providers | 3-5 min | 8 min |
-| 2 | Provider Configs | 30 seg | 8.5 min |
-| 3 | Platform APIs | 1 min | 9.5 min |
-| 4 | Governance | 1-2 min | 11.5 min |
-| 5 | Dev Environment | 5-10 min | 21.5 min |
-| 6 | HML Environment | 5-10 min | 31.5 min |
-| 7 | Prod Environment | 5-10 min | 41.5 min |
+| 1 | Providers | 3-5 min | 5 min |
+| 2 | Provider Configs | 30 seg | 5.5 min |
+| 3 | Platform APIs | 1 min | 6.5 min |
+| 4 | Governance | 1 min | 7.5 min |
+| 5 | Dev Environment | 5-10 min | 17.5 min |
+| 6 | HML Environment | 5-10 min | 27.5 min |
+| 7 | Prod Environment | 5-10 min | 37.5 min |
 
-**Total**: ~35-45 minutos para deploy completo
+**Total**: ~30-40 minutos para deploy completo (após Crossplane instalado)
+
+## 📋 Pré-requisitos Manuais
+
+Antes de executar o ArgoCD, você deve instalar manualmente:
+
+### 1. Crossplane Core
+```bash
+# Instalar Crossplane via Helm
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo update
+
+helm install crossplane \
+  --namespace crossplane-system \
+  --create-namespace \
+  crossplane-stable/crossplane \
+  --wait
+
+# Verificar instalação
+kubectl get pods -n crossplane-system
+kubectl get crds | grep crossplane
+```
+
+### 2. ArgoCD
+```bash
+# Instalar ArgoCD
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# Verificar instalação
+kubectl get pods -n argocd
+
+# Obter senha inicial (opcional)
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
 
 ## 🔍 Verificar Ordem de Deploy:
 
@@ -104,17 +128,16 @@ SYNC:.status.sync.status,\
 HEALTH:.status.health.status \
   --sort-by=.metadata.annotations."argocd\.argoproj\.io/sync-wave"
 
-# Resultado:
+# Resultado esperado:
 # NAME                      WAVE   SYNC     HEALTH
-# crossplane-core           0      Synced   Healthy
 # crossplane-providers      1      Synced   Healthy
 # aws-provider-configs      2      Synced   Healthy
-# azure-provider-configs    2      Synced   Healthy
 # platform-apis             3      Synced   Healthy
-# governance                4      Synced   Healthy
-# environment-dev           5     Syncing  Progressing
-# environment-hml           6     OutOfSync Missing
-# environment-prod          7     OutOfSync Missing
+# governance-namespaces     4      Synced   Healthy
+# governance-rbac           4      Synced   Healthy
+# environment-dev           5      Syncing  Progressing
+# environment-hml           6      OutOfSync Missing
+# environment-prod          7      OutOfSync Missing
 ```
 
 ## 🎬 Comportamento do ArgoCD:
@@ -129,32 +152,36 @@ HEALTH:.status.health.status \
 
 ```
 00:00 - Bootstrap aplicado
-00:01 - 8 Applications criadas (todas aparecem no ArgoCD UI)
-00:01 - Wave 0 inicia sync (crossplane-core)
-00:03 - Wave 0 completa (Crossplane Healthy)
-00:03 - Wave 1 inicia sync (providers)
-00:08 - Wave 1 completa (Providers HEALTHY)
-00:08 - Wave 2 inicia sync (configs)
-00:09 - Wave 2 completa
-00:09 - Wave 3 inicia sync (platform-apis)
-00:10 - Wave 3 completa (XRDs disponíveis)
-00:10 - Wave 4 inicia sync (governance)
-00:12 - Wave 4 completa
-00:12 - Wave 5 inicia sync (environment-dev)
-00:22 - Wave 5 completa (Claims dev criadas)
-00:22 - Wave 6 inicia sync (environment-hml)
-00:32 - Wave 6 completa
-00:32 - Wave 7 inicia sync (environment-prod)
-00:42 - Wave 7 completa ✅ TUDO PRONTO!
+00:01 - 7 Applications criadas (todas aparecem no ArgoCD UI)
+00:01 - Wave 1 inicia sync (providers)
+00:05 - Wave 1 completa (Providers HEALTHY)
+00:05 - Wave 2 inicia sync (configs)
+00:06 - Wave 2 completa
+00:06 - Wave 3 inicia sync (platform-apis)
+00:07 - Wave 3 completa (XRDs disponíveis)
+00:07 - Wave 4 inicia sync (governance)
+00:08 - Wave 4 completa
+00:08 - Wave 5 inicia sync (environment-dev)
+00:18 - Wave 5 completa (Claims dev criadas)
+00:18 - Wave 6 inicia sync (environment-hml)
+00:28 - Wave 6 completa
+00:28 - Wave 7 inicia sync (environment-prod)
+00:38 - Wave 7 completa ✅ TUDO PRONTO!
 ```
 
 ## 🚀 Como Usar:
 
 ```bash
-# 1. Aplicar bootstrap
+# 1. Instalar pré-requisitos (Crossplane + ArgoCD)
+# Ver seção "Pré-requisitos Manuais" acima
+
+# 2. Criar o projeto da plataforma
+kubectl apply -f argocd/projects/platform-project.yaml
+
+# 3. Aplicar bootstrap
 kubectl apply -f argocd/bootstrap/bootstrap-app.yaml
 
-# 2. Watch na ordem
+# 4. Watch na ordem
 kubectl get applications -n argocd -w
 
 # Você verá as apps sendo criadas e synced uma de cada vez!
@@ -164,5 +191,39 @@ kubectl get applications -n argocd -w
 
 Suas applications **JÁ ESTÃO** com sync waves e vão executar **UMA POR VEZ** na ordem correta! 🎉
 
-Nada mais a fazer, só aplicar o bootstrap e assistir a mágica acontecer!
+Nada mais a fazer após instalar os pré-requisitos, só aplicar o bootstrap e assistir a mágica acontecer!
 
+## 🔧 Troubleshooting
+
+### Providers não ficam HEALTHY
+```bash
+# Verificar logs do provider
+kubectl logs -n crossplane-system -l pkg.crossplane.io/provider=provider-aws
+
+# Verificar se as credenciais estão corretas
+kubectl get secret -n crossplane-system aws-creds
+```
+
+### Claims ficam em Pending
+```bash
+# Verificar evento do claim
+kubectl describe bucket -n dev <bucket-name>
+
+# Verificar se o XRD existe
+kubectl get xrd
+
+# Verificar se a Composition existe
+kubectl get composition
+```
+
+### ArgoCD não progride para próxima wave
+```bash
+# Ver detalhes da application
+kubectl describe application -n argocd <app-name>
+
+# Ver eventos
+kubectl get events -n argocd --sort-by='.lastTimestamp'
+
+# Forçar sync se necessário
+argocd app sync <app-name>
+```
