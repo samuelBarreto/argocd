@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: crossplane-providers-s3
+  name: crossplane-providers
   namespace: argocd
   labels:
-    app.kubernetes.io/name: crossplane-providers-s3
+    app.kubernetes.io/name: crossplane-providers
     layer: infrastructure
   annotations:
     argocd.argoproj.io/sync-wave: "1"  # Deploy após o core
@@ -17,7 +17,7 @@ spec:
   source:
     repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
     targetRevision: main
-    path: providers/aws/s3
+    path: providers/aws/
     directory:
       recurse: false  # Apenas arquivos na raiz, ignora subdiretórios
 
