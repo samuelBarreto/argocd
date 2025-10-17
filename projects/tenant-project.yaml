@@ -35,6 +35,8 @@ spec:
     kind: 'Bucket'
   - group: 'platform.example.com'
     kind: 'Network'
+  - group: 'platform.example.com'
+    kind: 'Instance'
   - group: ''
     kind: 'ConfigMap'
   - group: ''

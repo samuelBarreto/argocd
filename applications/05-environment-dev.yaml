@@ -50,4 +50,12 @@ spec:
     kind: Bucket
     jsonPointers:
     - /status
+  - group: platform.example.com
+    kind: Network
+    jsonPointers:
+    - /status
+  - group: platform.example.com
+    kind: Instance
+    jsonPointers:
+    - /status
 
