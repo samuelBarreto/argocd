@@ -1,0 +1,52 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bedrock-agent
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: bedrock-agent
+    layer: workloads
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"  # Deploy após hml
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: platform
+  
+  source:
+    repoURL: https://github.com/samuelBarreto/bedrock-agent.git
+    targetRevision: main  # ou HEAD para sempre pegar a branch atual
+    path: .
+    # Kustomize automaticamente detectado (kustomization.yaml presente)
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  
+  syncPolicy:
+    automated:
+      prune: true       # Remove recursos deletados do Git
+      selfHeal: true    # Corrige drift automaticamente
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true  # Aplica apenas o que mudou
+    - SkipDryRunOnMissingResource=true  # Aguardar XRDs estarem prontos
+    retry:
+      limit: 10
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 10m
+  
+  # Ignorar diferenças em status (gerenciado pelo Crossplane)
+  ignoreDifferences:
+  - group: platform.example.com
+    kind: BedrockAgent
+    jsonPointers:
+    - /status
+  - group: platform.example.com
+    kind: Bucket
+    jsonPointers:
+    - /status
