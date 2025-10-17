@@ -19,7 +19,7 @@ spec:
     targetRevision: main
     path: providers/aws
     directory:
-      recurse: true
+      recurse: false  # Apenas arquivos na raiz, ignora subdiretórios
 
   
   destination:
@@ -28,10 +28,11 @@ spec:
   
   syncPolicy:
     automated:
-      prune: true
+      prune: false  # Desabilitado temporariamente para evitar deleção acidental
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
     retry:
       limit: 10
       backoff:
