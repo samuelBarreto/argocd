@@ -17,6 +17,7 @@ spec:
   - 'https://github.com/samuelBarreto/environments.git'
   - 'https://github.com/samuelBarreto/crossplane-system.git'
   - 'https://github.com/samuelBarreto/platform-apis.git'
+  - 'https://github.com/samuelBarreto/bedrock-agent.git'  # Bedrock Agent IAM resources
   - 'https://charts.crossplane.io/stable'
   
   # Destinos permitidos (clusters e namespaces)

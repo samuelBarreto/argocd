@@ -16,9 +16,9 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/samuelBarreto/argocd.git  # ALTERAR para seu repo principal
+    repoURL: https://github.com/samuelBarreto/bedrock-agent.git  # ALTERAR
     targetRevision: main  # ou HEAD para sempre pegar a branch atual
-    path: bedrock-agent
+    path: .
     # Kustomize automaticamente detectado (kustomization.yaml presente)
   
   destination:
