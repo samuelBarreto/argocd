@@ -16,9 +16,9 @@ spec:
   project: platform
   
   source:
-    repoURL: https://github.com/samuelBarreto/bedrock-agent.git
+    repoURL: https://github.com/samuelBarreto/argocd.git  # ALTERAR para seu repo principal
     targetRevision: main  # ou HEAD para sempre pegar a branch atual
-    path: .
+    path: bedrock-agent
     # Kustomize automaticamente detectado (kustomization.yaml presente)
   
   destination:
@@ -42,11 +42,11 @@ spec:
   
   # Ignorar diferenças em status (gerenciado pelo Crossplane)
   ignoreDifferences:
-  - group: platform.example.com
-    kind: BedrockAgent
+  - group: iam.aws.upbound.io
+    kind: Role
     jsonPointers:
     - /status
-  - group: platform.example.com
-    kind: Bucket
+  - group: iam.aws.upbound.io
+    kind: RolePolicy
     jsonPointers:
     - /status
