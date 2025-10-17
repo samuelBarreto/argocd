@@ -16,7 +16,7 @@ spec:
   
   source:
     repoURL: https://github.com/samuelBarreto/crossplane-system.git  # ALTERAR
-    targetRevision: main/aws/s3
+    targetRevision: main
     path: providers/aws
     directory:
       recurse: true
