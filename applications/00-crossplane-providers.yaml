@@ -2,10 +2,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: crossplane-providers-aws
+  name: crossplane-providers
   namespace: argocd
   labels:
-    app.kubernetes.io/name: crossplane-providers-aws
+    app.kubernetes.io/name: crossplane-providers
     layer: infrastructure
   annotations:
     argocd.argoproj.io/sync-wave: "1"  # Deploy após o core
